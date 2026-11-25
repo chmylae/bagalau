@@ -1,3 +1,2 @@
-// Firebase Realtime Database URL (мысалы: "https://bagalau-12345-default-rtdb.firebaseio.com")
-// Бос болса — бағалар тек осы браузерде сақталады.
-window.DB_URL = "";
+// Firebase Realtime Database URL
+window.DB_URL = "https://bagalau-358e1-default-rtdb.firebaseio.com";

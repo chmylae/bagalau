@@ -65,3 +65,11 @@ window.DEFAULT_GROUPS = {
     ]
   }
 };
+
+// Кіру кодтарының SHA-256 хэштері ("bagalau:" + код)
+window.ACCESS = {
+  g1: "ebcf3507154bca2b53fad43411e569f7052381991c55df8e30557eb0dc2ab495",
+  g2: "76f6d690fe6752b73c39159baed3300d602cea37a4d7a8bc853309ea7fbe3ea0",
+  g3: "09bd72635251ac459a151e9ac832904981c707b4cef502269e2af42f83572cd9",
+  teacher: "3e37026aa2c4e5682bfaa4d10f1be9f537be822fb4f0fb4e7b6c9a79249d8987"
+};

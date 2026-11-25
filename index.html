@@ -74,6 +74,11 @@ select{font:inherit;padding:5px 4px;border:1px solid var(--line);border-radius:8
 .big{font-size:30px;font-weight:800}
 .links{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
 .links .card{padding:12px;font-size:13px;word-break:break-all}
+.roles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.role{font:inherit;text-align:left;padding:14px;border-radius:14px;border:2px solid var(--line);background:var(--soft);color:var(--ink);cursor:pointer;border-left:6px solid var(--c)}
+.role b{display:block;font-size:16px}.role span{font-size:12px;color:var(--muted)}
+.role.on{border-color:var(--c);background:var(--card);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 25%,transparent)}
+.codein{flex:1;font:inherit;font-size:18px;letter-spacing:.2em;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);min-width:0}
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:.2s;pointer-events:none}
 .toast.show{opacity:1}
 @media (max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}.groups,.links{grid-template-columns:1fr}.crit{grid-template-columns:1fr}}

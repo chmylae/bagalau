@@ -73,10 +73,55 @@
 
   function toast(t) { const el = $("#toast"); el.textContent = t; el.classList.add("show"); setTimeout(() => el.classList.remove("show"), 1800); }
 
+  // ---------- login ----------
+  const SK = "bagalau_role_v1";
+  const getRole = () => { try { return localStorage.getItem(SK); } catch { return null; } };
+  const setRole = (r) => { try { r ? localStorage.setItem(SK, r) : localStorage.removeItem(SK); } catch {} };
+  const roleName = (r) => (r === "teacher" ? "Мұғалім" : r ? `${IDS.indexOf(r) + 1}-топ` : "");
+  async function sha(t) {
+    const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t));
+    return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("");
+  }
+  function renderLogin(pre) {
+    $("#nav").innerHTML = "";
+    const roles = [...IDS.map((id, i) => [id, `${i + 1}-топ`, DEFAULT_GROUPS[id].title.split(": ")[1] || "", DEFAULT_GROUPS[id].color]), ["teacher", "Мұғалім", "Барлық топтар", "#64748b"]];
+    setStatus("", "Кіру қажет");
+    let sel = roles.some((r) => r[0] === pre) ? pre : null;
+    $("#app").innerHTML = `
+    <div class="card pad" style="max-width:560px;margin:30px auto">
+      <h1 style="margin-bottom:4px">Кіру</h1><div class="sub" style="margin-bottom:16px">Тобыңызды таңдап, мұғалім берген кодты енгізіңіз.</div>
+      <div class="roles">${roles.map(([id, t, d, c]) => `<button class="role${sel === id ? " on" : ""}" data-role="${id}" style="--c:${c}"><b>${t}</b><span>${esc(d)}</span></button>`).join("")}</div>
+      <form id="lf" style="display:flex;gap:8px;margin-top:14px">
+        <input id="code" type="password" inputmode="numeric" autocomplete="off" placeholder="Код" class="codein">
+        <button class="btn primary" type="submit">Кіру</button>
+      </form>
+      <div id="lerr" class="sub" style="color:var(--bad);margin-top:8px;min-height:18px"></div>
+    </div>`;
+    $("#app").onclick = (e) => {
+      const b = e.target.closest("[data-role]"); if (!b) return;
+      sel = b.dataset.role;
+      document.querySelectorAll(".role").forEach((x) => x.classList.toggle("on", x === b));
+      $("#code").focus();
+    };
+    $("#app").onchange = $("#app").oninput = null;
+    $("#lf").onsubmit = async (e) => {
+      e.preventDefault();
+      if (!sel) { $("#lerr").textContent = "Алдымен топты таңдаңыз."; return; }
+      const h = await sha("bagalau:" + $("#code").value.trim());
+      if (h !== ACCESS[sel]) { $("#lerr").textContent = "Код қате. Қайта көріңіз."; return; }
+      setRole(sel);
+      location.hash = "#" + sel;
+      onRoute();
+    };
+  }
+
   // ---------- nav ----------
   function renderNav() {
-    const items = [["teacher", "Мұғалім (жалпы)"], ...IDS.map((id, i) => [id, `${i + 1}-топ`])];
-    $("#nav").innerHTML = items.map(([id, t]) => `<a href="#${id}" class="${route === id ? "on" : ""}">${t}</a>`).join("");
+    const role = getRole();
+    const items = role === "teacher" ? [["teacher", "Мұғалім (жалпы)"], ...IDS.map((id, i) => [id, `${i + 1}-топ`])] : [[role, roleName(role)]];
+    $("#nav").innerHTML = items.map(([id, t]) => `<a href="#${id}" class="${route === id ? "on" : ""}">${t}</a>`).join("") +
+      `<a href="#" id="logout" title="Шығу">Шығу ⎋</a>`;
+    $("#logout").onclick = (e) => { e.preventDefault(); setRole(null); clearInterval(pollTimer); renderLogin(); };
   }
   const banner = () => DB ? "" : `<div class="banner">⚠ Онлайн база қосылмаған: бағалар тек осы құрылғыда сақталады. Мұғалім көруі үшін <b>config.js</b> ішіне Firebase сілтемесін қойыңыз.</div>`;
 
@@ -201,8 +246,12 @@
     document.title = IDS.includes(route) ? groups[route].title + " · Бағалау" : "Бағалау · Мұғалім";
   }
   async function onRoute() {
-    route = (location.hash || "#teacher").slice(1);
-    if (!IDS.includes(route)) route = "teacher";
+    const want = (location.hash || "").slice(1);
+    const role = getRole();
+    if (!role || !ACCESS[role]) { clearInterval(pollTimer); renderLogin(want); return; }
+    // топ мүшесі тек өз тобын көреді
+    route = role === "teacher" ? (IDS.includes(want) ? want : "teacher") : role;
+    if (want !== route) history.replaceState(null, "", "#" + route);
     await load(); render(); window.scrollTo(0, 0);
     clearInterval(pollTimer);
     if (DB && route === "teacher") pollTimer = setInterval(async () => { await load(); render(); }, 10000);
